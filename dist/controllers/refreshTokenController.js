@@ -48,10 +48,11 @@ const handleRefreshToken = async (req, res) => {
                 username: decoded.username,
                 roles: roles,
             },
-        }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '10s' });
-        const newRefreshToken = jwt.sign({ username: foundUser.username }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
+        }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '50m' });
+        const newRefreshToken = jwt.sign({ username: foundUser.username }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+        console.log('newrefreshtoken', newRefreshToken);
         foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
-        const result = await foundUser.save();
+        await foundUser.save();
         res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 24 * 60 * 60 * 1000 });
         res.json({ accessToken });
     });

@@ -15,8 +15,7 @@ export const handleRefreshToken = async (req: Request, res: Response): Promise<v
     res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
 
     
-    const foundUser: IUser = await User.findOne<IUser>({ refreshToken: refreshToken }).exec();
-    // const foundUser: IUser | null = await User.find<IUser>({ refreshToken: refreshToken }).limit(1);
+    const foundUser: IUser | null = await User.findOne({ refreshToken: refreshToken }).exec();
 
     console.log('foundUser :',foundUser)
 
@@ -65,17 +64,18 @@ export const handleRefreshToken = async (req: Request, res: Response): Promise<v
                     },
                 },
                 process.env.ACCESS_TOKEN_SECRET as string,
-                { expiresIn: '10s' }
+                { expiresIn: '50m' }
             );
 
             const newRefreshToken = jwt.sign(
                 { username: foundUser.username },
                 process.env.REFRESH_TOKEN_SECRET as string,
-                { expiresIn: '1d' }
+                { expiresIn: '7d' }
             );
+            console.log('newrefreshtoken', newRefreshToken)
             // Saving refreshToken with current user
             foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
-            const result = await foundUser.save();
+            await foundUser.save();
 
             // Creates Secure Cookie with refresh token
             res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 24 * 60 * 60 * 1000 });
